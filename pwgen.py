@@ -1,7 +1,7 @@
 import subprocess
 import numpy as np
 import argparse
-import locale
+import pyperclip
 
 
 class PWGenerator(object):
@@ -60,6 +60,11 @@ if __name__ == "__main__":
     special = args.special
     gen = PWGenerator(length, special, numbers)
     result = gen.generate()
-    encoding = locale.getpreferredencoding()
-    subprocess.run(['clip.exe'], input=result.encode(encoding), check=True)
+    pyperclip.copy(result)
+
+    # old method of copying to clipboard; only works on Windows
+    # import locale
+    # encoding = locale.getpreferredencoding()
+    # subprocess.run(['clip.exe'], input=result.encode(encoding), check=True)
+
     print("{} has been copied to the clipboard.".format(result))
