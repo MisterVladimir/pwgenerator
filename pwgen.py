@@ -18,23 +18,26 @@ class PWGenerator(object):
         self.numbers = numbers
 
     def generate(self):
-
-        def remove_indices(ind):
-            for i in ind:
-                j = remaining_indices.index(i)
-                del remaining_indices[j]
-
         result = np.random.choice(self.lowercase, self.length)
         remaining_indices = list(range(self.length))
+        # number of uppercase letters
         n_uppercase = (self.length - self.numbers - self.special) // 2
         uppercase_indices = np.random.choice(remaining_indices, n_uppercase,
                                              replace=False)
-        remove_indices(uppercase_indices)
+        # remove indices marked to become uppercase letters
+        for i, j in enumerate(uppercase_indices):
+            del remaining_indices[j - i]
+
         numbers_indices = np.random.choice(remaining_indices, self.numbers,
                                            replace=False)
-        remove_indices(numbers_indices)
+        # remove any indices reserved for integers
+        remaining_indices = list(filter(lambda x: x not in numbers_indices,
+                                        remaining_indices))
+
         special_indices = np.random.choice(remaining_indices, self.special,
                                            replace=False)
+
+        # set the value of the resulting password
         result[uppercase_indices] = list(''.join(
             result[uppercase_indices]).upper())
         result[numbers_indices] = np.random.randint(
