@@ -1,12 +1,13 @@
+import copy
 import subprocess
 import numpy as np
 import argparse
 import pyperclip
+import secrets
+import string
 
 
 class PWGenerator(object):
-    lowercase = list('abcdefghijklmnopqrstuvwxyz')
-
     def __init__(self, length, special=1, numbers=1):
         assert (special + numbers < length - 1), \
             ("Cannot use {} special character(s) and ".format(special) +
@@ -18,32 +19,42 @@ class PWGenerator(object):
         self.numbers = numbers
 
     def generate(self):
-        result = np.random.choice(self.lowercase, self.length)
+        def to_string(li):
+            return list(map(lambda x: str(x).upper(), li))
+
+        def choice_no_rep(pool, n):
+            assert n <= len(pool), "Almost got caught in an infinite loop."
+            li = [None]*n
+            pool = copy.deepcopy(pool)
+            for i in range(n):
+                item = secrets.choice(pool)
+                del pool[pool.index(item)]
+                li[i] = item
+            return li
+
+        result = np.array([secrets.choice(string.ascii_lowercase)
+                           for _ in range(self.length)])
         remaining_indices = list(range(self.length))
         # number of uppercase letters
         n_uppercase = (self.length - self.numbers - self.special) // 2
-        uppercase_indices = np.random.choice(remaining_indices, n_uppercase,
-                                             replace=False)
+        uppercase_indices = choice_no_rep(remaining_indices, n_uppercase)
         # remove indices marked to become uppercase letters
         for i, j in enumerate(uppercase_indices):
             del remaining_indices[j - i]
 
-        numbers_indices = np.random.choice(remaining_indices, self.numbers,
-                                           replace=False)
+        numbers_indices = choice_no_rep(remaining_indices, self.numbers)
         # remove any indices reserved for integers
         remaining_indices = list(filter(lambda x: x not in numbers_indices,
                                         remaining_indices))
 
-        special_indices = np.random.choice(remaining_indices, self.special,
-                                           replace=False)
+        special_indices = choice_no_rep(remaining_indices, self.special)
 
         # set the value of the resulting password
-        result[uppercase_indices] = list(''.join(
-            result[uppercase_indices]).upper())
-        result[numbers_indices] = np.random.randint(
-                                            0, 10, self.numbers).astype('S1')
-        result[special_indices] = np.random.choice(list('!@#$%^&*'),
-                                                   self.special)
+        result[uppercase_indices] = to_string(result[uppercase_indices])
+        result[numbers_indices] = to_string([secrets.randbelow(10)
+                                             for _ in numbers_indices])
+        result[special_indices] = to_string([secrets.choice('!@#$%^&*')
+                                             for _ in special_indices])
         return ''.join(result)
 
 
