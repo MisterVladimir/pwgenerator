@@ -53,7 +53,7 @@ class PWGenerator(object):
         result[uppercase_indices] = to_string(result[uppercase_indices])
         result[numbers_indices] = to_string([secrets.randbelow(10)
                                              for _ in numbers_indices])
-        result[special_indices] = to_string([secrets.choice('!@#$%^&*')
+        result[special_indices] = to_string([secrets.choice('!@#$%^&*~+')
                                              for _ in special_indices])
         return ''.join(result)
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-s", "--special", type=int, default=1,
-                        help="number of special characters (!@#$%^&*) to"
+                        help="number of special characters (!@#$%^&*~+) to"
                         "include.")
     parser.add_argument("-n", "--numbers", type=int, default=1,
                         help="number of integers to include.")
